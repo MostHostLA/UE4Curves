@@ -12,16 +12,6 @@
 
 ---
 
-## 🛠️ Tech Stack
-
-| Category | Technology | Purpose |
-| :--- | :--- | :--- |
-| **Engine** | Unreal Engine 4 (UE4) | Core Game Engine |
-| **Language** | C++ | Core Performance & Math API |
-| **Scripting** | Blueprints | Gameplay Integration & Visual Scripting |
-
----
-
 ## 🚀 Getting Started
 
 Follow these steps to integrate this extension into your UE4 project.

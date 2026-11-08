@@ -23,8 +23,8 @@ bl_info = {
 	"name": "ue4curves",
 	"description": "Export animation curves and better UE4 ready FBX files.",
 	"author": "Andy Fattoracci @ MostHostLA.com",
-	"version": (1, 4, 0),
-	"blender": (4, 1, 0),
+	"version": (1, 5, 0),
+	"blender": (5, 2, 0),
 	"location": "Armature properties, Bone properties, View3d tools panel, Armature Add menu",
 	"warning": "", # used for warning icon and text in addons panel
 	"tracker_url": "http://mosthostla.com/gamedev/contact/",

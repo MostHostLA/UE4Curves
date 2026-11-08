@@ -586,7 +586,7 @@ def blen_read_animations_action_item(action, item, cnodes, fps, anim_offset):
             bl_obj = item.bl_obj.pose.bones[item.bl_bone]
         else:
             bl_obj = item.bl_obj
-        
+
         # We want to create actions for objects, but for bones we 'reuse' armatures' actions!
         grpname = item.bl_obj.name
 
@@ -806,6 +806,8 @@ def blen_read_geom_array_setattr(generator, blen_data, blen_attr, fbx_data, stri
 
     for blen_idx, fbx_idx in generator:
         if check_skip(blen_idx, fbx_idx):
+            continue
+        if blen_attr == 'normal':
             continue
         _process(blen_data, blen_attr, fbx_data, xform, item_size, blen_idx, fbx_idx)
 
@@ -1250,14 +1252,15 @@ def blen_read_geom(fbx_tmpl, fbx_obj, settings):
     if settings.use_custom_normals:
         # Note: we store 'temp' normals in loops, since validate() may alter final mesh,
         #       we can only set custom lnors *after* calling it.
-        mesh.create_normals_split()
         if geom_mat_no is None:
             ok_normals = blen_read_geom_layer_normal(fbx_obj, mesh)
         else:
             def nortrans(v):
                 return geom_mat_no @ Vector(v)
             ok_normals = blen_read_geom_layer_normal(fbx_obj, mesh, nortrans)
-
+        # If normals were successfully read, apply them directly. This replaces the old legacy split-cache layout pipeline.
+        if ok_normals and isinstance(ok_normals, (list, tuple)):
+            mesh.normals_split_custom_set(ok_normals)
     mesh.validate(clean_customdata=False)  # *Very* important to not remove lnors here!
 
     if ok_normals:
@@ -1269,12 +1272,16 @@ def blen_read_geom(fbx_tmpl, fbx_obj, settings):
             ok_smooth = True
 
         mesh.normals_split_custom_set(tuple(zip(*(iter(clnors),) * 3)))
-        mesh.use_auto_smooth = True
+        mesh_object = bpy.data.objects.get(mesh.name)
+        if mesh_object:
+            bpy.context.view_layer.objects.active = mesh_object
+            bpy.ops.object.modifier_add_node_group(
+                asset_library_type='ESSENTIALS',
+                asset_library_identifier="",
+                relative_asset_identifier="geometry_nodes/smooth_by_angle.blend/NodeTree/Smooth by Angle"
+            )
     else:
         mesh.calc_normals()
-
-    if settings.use_custom_normals:
-        mesh.free_normals_split()
 
     if not ok_smooth:
         mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
